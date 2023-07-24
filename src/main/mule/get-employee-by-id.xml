@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="get-employee-by-idFlow" doc:id="822b5121-c488-4311-a51b-2b7ca81fbd4c" >
+		<http:listener doc:name="Get Employee Listener" doc:id="792842c9-b699-4f0c-8ad8-38d4c09ba22b" config-ref="HTTP_Listener_config" path="get-employee" allowedMethods="GET"/>
+		<logger level="INFO" doc:name="Start Logger" doc:id="2caf94b8-6752-4458-8fa1-e867d9ae3ee5" message="Started get employee by id flow"/>
+		<db:select doc:name="Select Employee" doc:id="66f512bf-4862-4962-844f-38731020244a" config-ref="Database_Config">
+			<db:sql ><![CDATA[SELECT emp_id, emp_name, emp_status FROM emp WHERE emp_id=:empId]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	empId: attributes.queryParams.employeeId
+}]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="acfb9233-bc7a-4e4d-a26d-b7810c06ea64" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	employeeId: payload[0].EMP_ID,
+	employeeName: payload[0].EMP_NAME,
+	employeeStatus: payload[0].EMP_STATUS
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="End Logger" doc:id="a27c38b6-06a1-47b8-a268-984ceea4bd6c" message="Completed get employee by id flow"/>
+	</flow>
+</mule>
